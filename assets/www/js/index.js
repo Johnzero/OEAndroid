@@ -27,7 +27,7 @@ var app = {
     },
     
     configpage: function () {
-        $.mobile.changePage($("#config"), "slideup");    
+        $.mobile.changePage($("#config"), "pop",true,true);    
     },
     
     mainpage: function () {
@@ -40,14 +40,23 @@ var app = {
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
+        document.addEventListener("backbutton", this.exitapp, false);
         //document.addEventListener("online",this.onDeviceReady, false);
         document.addEventListener("offline",this.onDeviceOffline, false)
     },
+    
     
     // deviceready Event Handler
     //
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicity call 'app.receivedEvent(...);'
+    
+    exitapp: function () {
+        
+        navigator.app.exitApp();
+        
+    },
+        
     onDeviceOffline :function () {
         $.mobile.loading('show', {
             text: '',
@@ -57,7 +66,7 @@ var app = {
         });
         setTimeout(function () {
             navigator.app.exitApp();
-        },4000);
+        },2000);
     },
     
     onDeviceReady: function() {
@@ -128,7 +137,7 @@ var app = {
                 text: '',
                 textVisible: true,
                 theme: 'a',
-                html:"<h1><b>请等待</b></h1>"
+                html:"<h1><b>请等待,连接中...</b></h1>"
                 });
             setTimeout(function () {
                 $.mobile.hidePageLoadingMsg();
@@ -153,6 +162,67 @@ var app = {
         }
     },
     
+    loadingmsg: function () {
+        $.mobile.loading('show', {
+                text: '',
+                textVisible: true,
+                theme: 'a',
+                html: "<h1><b>读取中...</b></h1>"
+        });
+    },
+    
+    read: function () {
+        if (!app.checkconnect()) {
+            return true;  
+        };
+        app.loadingmsg();
+        $('#module').empty().append( $("<option value=''>选择模块...</option>")); 
+        $('#module-menu').empty().append( $("<option value=''>选择模块...</option>")); 
+        app.connected.then(function() {
+            var ds = new app.instance.web.DataSetSearch(null, "ir.model");
+            ds.read_slice(['name','model'], {})
+            .then(function(models){
+                _.each(models,function(m,i){
+                    $("#module").append("<option name="+m.name+"value="+ i + ">" + m.model + "</option>");
+                    //$("#module").append("<option value="+ m.state + ">" + m.name + "</option>");
+                    //<option value="m.model">m.name</option>
+                });
+            })
+            .done(function () {
+                $.mobile.hidePageLoadingMsg();
+                $("#module").selectmenu("refresh");
+            });
+        });
+    },
+    
+    test: function () {
+        var model =new app.instance.web.Model("res.users");
+        var func = new app.instance.web.Model("scrapy").get_func("write");
+        func([2],{"name":"111111"}).done(function (res) {
+
+            console.log(res);
+
+        });
+    },
+    
+    write: function () {
+        
+        var func = new app.instance.web.Model("res.users").get_func("write");
+        func([1],{"name":"111111"}).done(function (res) {
+            console.log(res);
+        });
+        
+    },
+    perm_read: function () {
+        
+        var func = new app.instance.web.Model("res.users").get_func("perm_read");
+        func([1]).then(function (res) {
+
+            console.log(res);
+
+        });
+    },
+        
     handlevent: function () {
         if (!app.checkconnect()) {
           return true;  
@@ -172,62 +242,97 @@ var app = {
         });
     },
     
-    read: function () {
-        if (!app.checkconnect()) {
-            return true;  
-        };
-        $.mobile.loading('show', {
+    addresult:function () {
+        $("#result").empty();
+        if (!$('option:selected').val()) {
+            $.mobile.loading('show', {
                 text: '',
                 textVisible: true,
                 theme: 'a',
-                html: "<h1><b>读取中...</b></h1>"
-        });
-        $('#module').empty().append( $("<option value=''>选择模块...</option>")); 
-        $('#module-menu').empty().append( $("<option value=''>选择模块...</option>")); 
-        app.connected.then(function() {
-            var ds = new app.instance.web.DataSetSearch(null, "ir.module.module");
-            ds.read_slice(['name','state'], {}).then(function(models){
-                _.each(models,function(m,i){
-                    if (m.state == "installed") {
-                        $("#module").append("<option value="+ i + ">" + m.name + "</option>");
-                        var myselect = $("#module");
-                        myselect.selectmenu("refresh");
-                    };
-                    //$("#module").append("<option value="+ m.state + ">" + m.name + "</option>");
-                    //<option value="m.model">m.name</option>
+                html:"<h1><b>选择模块</b></h1>"
                 });
-            });
-        });
-        $.mobile.hidePageLoadingMsg();
+            setTimeout(function () {
+                $.mobile.hidePageLoadingMsg();
+                },1000);
+            return false;            
+        };
     },
     
     create: function () {
         if (!app.checkconnect()) {
             return true;  
         };
+        //app.addresult();
+        app.loadingmsg();
         var module = $("#module-button").text().replace("_",".").replace(" ",'');
-        var ds = new app.instance.web.DataSet(null,module);
-        
-        console.log(ds);
+        var func = new app.instance.web.Model("scrapys").get_func("create");
+        console.log(func({"name":'asdfasdfaa111'}));
+        func({"name":'asdfasdfaa111'})
+        .done(function (res) {
+            $("#result").append("<li>" + res + "</li>");
+            var myselect = $("#result");
+            myselect.listview("refresh");
+            $.mobile.hidePageLoadingMsg();
+        })
+        .fail(function (res) {
+            $.mobile.loading('show', {
+                text: '',
+                textVisible: true,
+                theme: 'a',
+                html:"<h1><b>错误！</b></h1>"
+                });
+            setTimeout(function () {
+                $.mobile.hidePageLoadingMsg();
+                },1000);
+            return false;
+        });
     },
     
     fields: function () {
         if (!app.checkconnect()) {
             return true;  
         };
-        //var module = $("#module-button").text().replace("_",".").replace(" ",'');
+        app.addresult();
+        app.loadingmsg();
+        var module = $('option:selected').text().replace("_",".").replace(" ",'');
+        
+        var func = new app.instance.web.Model("res.users").get_func("read");
+        //var id = $('option:selected').val();
+        //var Users = new app.instance.web.Model("res.users");
         //var ds = new app.instance.web.DataSet(null,module);
-        var Users = new app.instance.web.Model("res.users");
         
-        Users.query(['name'])
-            .all().then(function (users) {_.each(users,function(m,i){
-                            $("#result").append("<li>" + m.name + "</li>");
-                            var myselect = $("#result");
-                            myselect.listview("refresh");})
-                        // do work with users records
-                        });
-        
-        //$("#result").append("<option value="+ m.model + ">" + m.name + "</option>");
+    },
 
+    demo:function () {
+        
+        var func = new app.instance.web.Model("res.users").get_func("read");
+        
+        func(3, ["name", "company_id"]).then(function(res) {
+            console.log(res);
+            $("#result").append("<li>" + res.name + "</li>");
+            var myselect = $("#result");
+            myselect.listview("refresh");
+            $.mobile.hidePageLoadingMsg();
+        ;});
+        
+        Users.get_func("read")(Users.uid, ["name", "company_id"]).then(function (users) {
+            cosole.log(users);
+            $("#result").append("<li>" + users.name + "</li>");
+            var myselect = $("#result");
+            myselect.listview("refresh");
+        });
+        
+        
+        Users.query(['name']).all()
+        .then(function (users) {
+            _.each(users,function(m,i){
+            $("#result").append("<li>" + m.name + "</li>");
+            })
+            // do work with users records
+        }).done(function () {
+            var myselect = $("#result");
+            myselect.listview("refresh");
+            $.mobile.hidePageLoadingMsg();
+            });
     }
 };

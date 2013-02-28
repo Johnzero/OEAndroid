@@ -6,6 +6,7 @@
 $(document).bind("mobileinit", function(){
     $.mobile.selectmenu.prototype.options.nativeMenu = false;
     $.extend(  $.mobile , {  
-     defaultPageTransition: 'none'  
+        defaultPageTransition: 'none'  
     });
 });
+

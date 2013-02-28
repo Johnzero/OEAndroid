@@ -19,7 +19,6 @@
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
-
 body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
@@ -113,6 +112,11 @@ h1 {
     animation:fade 1000ms infinite;
     -webkit-animation:fade 1000ms infinite;
 }
+
+
+
+
+/*change style */
 .ui-footer-change {
     position: absolute !important;
     bottom: 0;
@@ -122,3 +126,26 @@ h1 {
     border: transparent !important;
 }
 .ui-icon-gears {background:url('images/throbber.gif')  !important;}
+.right { float:right;}
+
+.ui-header .ui-btn {
+    margin-top: 0px;
+
+}
+.ui-header .ui-btn-icon-left .ui-btn-inner {
+    padding-top: 15px;
+}
+.ui-header .ui-btn, .ui-header .ui-icon, .ui-header .ui-btn-inner {
+}
+.ui-header .ui-btn-inner{
+    font-size: 20px;
+}
+.ui-header {
+    height: 60px;
+}
+.ui-header .ui-btn-text {
+}
+.ui-header .ui-title {
+    font-size: 25px;
+}
+​
